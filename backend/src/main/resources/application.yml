@@ -1,0 +1,36 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    # 重点：这里连的是 MyCat 的端口 8066，不是 3306！
+    url: jdbc:mysql://localhost:8066/ETC_DB?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: etc-backend-group # 消费者组ID
+      auto-offset-reset: latest   # 从最新的数据开始读
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+  redis:
+    host: localhost
+    port: 6379
+    database: 0
+    timeout: 3000ms
+
+  # 【关键修改】mvc 必须提到最外面，和 datasource 同级
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+
+# MyBatis-Plus 配置
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      id-type: auto

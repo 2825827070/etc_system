@@ -1,0 +1,64 @@
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.0
+    container_name: etc-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    container_name: etc-kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+
+  hbase:
+    image: harisekhon/hbase:latest
+    container_name: etc-hbase
+    hostname: hbase-docker
+    ports:
+      - "16000:16000" # HBase Master
+      - "16010:16010" # Master Web UI
+      - "16020:16020" # RegionServer
+      - "16030:16030" # RegionServer Web UI
+      - "8083:8080" # REST API (改为8083避免与Spring Boot冲突)
+      - "8085:8085" # REST API Info
+      - "9090:9090" # Thrift API
+      - "9095:9095" # Thrift API Info
+    environment:
+      HBASE_CONF_hbase_rootdir: /hbase-data
+      HBASE_CONF_hbase_cluster_distributed: 'false'
+      HBASE_CONF_hbase_zookeeper_quorum: etc-zookeeper
+    volumes:
+      - hbase_data:/hbase-data
+    depends_on:
+      - zookeeper
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: etc-kafka-ui
+    ports:
+      - "8081:8080" # 主机访问 http://localhost:8081
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=local-cluster
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=etc-kafka:9092
+    depends_on:
+      - kafka
+    restart: unless-stopped
+
+volumes:
+  hbase_data:

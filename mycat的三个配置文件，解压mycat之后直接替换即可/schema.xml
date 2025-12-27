@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<!DOCTYPE mycat:schema SYSTEM "schema.dtd">
+<mycat:schema xmlns:mycat="http://io.mycat/">
+
+    <schema name="ETC_DB" checkSQLschema="false" sqlMaxLimit="100">
+        <table name="etc_data" dataNode="dn1,dn2" rule="mod-long" primaryKey="id" />
+        
+        <table name="road_speed_threshold" dataNode="dn1,dn2" type="global" primaryKey="id" />
+    
+        <table name="fake_vehicle_alert" dataNode="dn1" primaryKey="id" />
+        
+        <table name="traffic_prediction" dataNode="dn1" primaryKey="id" />
+    </schema>
+
+    <dataNode name="dn1" dataHost="host1" database="db1" />
+    <dataNode name="dn2" dataHost="host2" database="db2" />
+
+    <dataHost name="host1" maxCon="1000" minCon="10" balance="0"
+              writeType="0" dbType="mysql" dbDriver="native" switchType="1"  slaveThreshold="100">
+        <heartbeat>select user()</heartbeat>
+        <writeHost host="hostM1" url="localhost:3306" user="root" password="root">
+        </writeHost>
+    </dataHost>
+
+    <dataHost name="host2" maxCon="1000" minCon="10" balance="0"
+              writeType="0" dbType="mysql" dbDriver="native" switchType="1"  slaveThreshold="100">
+        <heartbeat>select user()</heartbeat>
+        <writeHost host="hostM2" url="localhost:3307" user="root" password="root">
+        </writeHost>
+    </dataHost>
+
+</mycat:schema>
